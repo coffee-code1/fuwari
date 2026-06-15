@@ -90,14 +90,14 @@ New-Alias tail Watch-Tail
 #### Marking full lines & line ranges
 
 ```js {1, 4, 7-8}
-// Line 1 - targeted by line number
-// Line 2
+ Line 1 - targeted by line number
+ Line 2
 // Line 3
 // Line 4 - targeted by line number
 // Line 5
 // Line 6
 // Line 7 - targeted by range "7-8"
-// Line 8 - targeted by range "7-8"
+ Line 8 - targeted by range "7-8"
 ```
 
 #### Selecting line marker types (mark, ins, del)
