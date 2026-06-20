@@ -159,8 +159,10 @@ export default defineConfig({
 				onwarn(warning, warn) {
 					// temporarily suppress this warning
 					if (
-						warning.message.includes("is dynamically imported by") &&
-						warning.message.includes("but also statically imported by")
+						(warning.message.includes("is dynamically imported by") &&
+						warning.message.includes("but also statically imported by"))
+						// 新增：屏蔽 fsevents 缺失解析报错
+					|| warning.message.includes("fsevents")
 					) {
 						return;
 					}

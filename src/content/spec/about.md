@@ -1,7 +1,7 @@
 # About
-This is the demo site for [Fuwari](https://github.com/saicaca/fuwari).
+一个平平无奇的小博客网站
 
-::github{repo="saicaca/fuwari"}
+::github{repo="coffee-code1/fuwari"}
 
 > ### Sources of images used in this site
 > - [Unsplash](https://unsplash.com/)
