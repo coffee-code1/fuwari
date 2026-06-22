@@ -1,11 +1,11 @@
 ---
-title: 短信登陆功能
+title: 点评项目之-1.短信登陆功能
 published: 2026-06-17
 # updated: 2024-11-29
 description: 基于session实现的短信登陆功能
 image: ''
-tags: [session,hmdp]
-category: hmdp
+tags: [session,点评项目,redis]
+category: Redis
 draft: false 
 ---
 
