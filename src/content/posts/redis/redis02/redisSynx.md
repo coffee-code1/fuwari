@@ -6,6 +6,17 @@ tags: [Redis]
 category: Redis
 draft: false
 ---
+- [Redis](#redis)
+  - [1.Redis的基本介绍](#1redis的基本介绍)
+  - [2.Redis的基本特征](#2redis的基本特征)
+  - [3.Redis的数据结构的基本介绍](#3redis的数据结构的基本介绍)
+  - [4.redis的基本语句](#4redis的基本语句)
+  - [5.redis语法](#5redis语法)
+    - [1.String](#1string)
+    - [2.Hash](#2hash)
+    - [3.List](#3list)
+    - [4.Set](#4set)
+    - [5.SortedSet](#5sortedset)
 
 # Redis
 
