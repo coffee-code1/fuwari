@@ -3,7 +3,7 @@ title: SpringDataRedis
 published: 2026-06-16
 description: 主要介绍SpringDataRedis的基本用法
 tags: [SpringDataRedis,Redis]
-category: JAVA中的Redis客户端
+category: Redis
 draft: false
 ---
 # SpringDataRedis

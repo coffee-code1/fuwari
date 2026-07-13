@@ -3,7 +3,7 @@ title: Jedis入门
 published: 2026-06-16
 description: java中的redis，jedis的使用方法
 tags: [Jedis,Redis,Java]
-category: JAVA中的Redis客户端
+category: Redis
 draft: false
 ---
 
