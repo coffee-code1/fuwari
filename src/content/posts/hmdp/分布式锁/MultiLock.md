@@ -11,7 +11,7 @@ draft: false
 - [一、什么是分布式锁](#一什么是分布式锁)
   - [1.1 概念](#11-概念)
   - [1.2 特点](#12-特点)
-- [二、实现方法](#二实现方法)
+- [二、基于redis实现方法](#二基于redis实现方法)
   - [2.1 redis核心操作](#21-redis核心操作)
   - [2.2 代码实现](#22-代码实现)
   - [2.3 遗留问题](#23-遗留问题)
@@ -22,6 +22,21 @@ draft: false
     - [2.7.1 什么是lua语言](#271-什么是lua语言)
     - [2.7.2 如何调用](#272-如何调用)
     - [2.7.3 在redis中调用:](#273-在redis中调用)
+- [三、基于Redission实现](#三基于redission实现)
+  - [3.1 rediss的问题](#31-rediss的问题)
+  - [3.2 什么是Redission](#32-什么是redission)
+    - [3.2.1 Redission的简介](#321-redission的简介)
+    - [3.2.2 Redisson的使用方法](#322-redisson的使用方法)
+  - [3.3 Redisson中可重入锁的原理](#33-redisson中可重入锁的原理)
+  - [3.4 Redisson中锁的可重式机制](#34-redisson中锁的可重式机制)
+    - [3.4.1 核心机制--订阅发布消息/超时兜底重试机制](#341-核心机制--订阅发布消息超时兜底重试机制)
+      - [1. 有参等待时间情况，ttl参数](#1-有参等待时间情况ttl参数)
+      - [2.没有释放时间的参数，只有等待时间](#2没有释放时间的参数只有等待时间)
+      - [3.无参的情况](#3无参的情况)
+  - [3.5 redisson解决主从一致性问题](#35-redisson解决主从一致性问题)
+    - [3.5.1 什么是主从一致性问题](#351-什么是主从一致性问题)
+    - [3.5.2 MultiLock解决](#352-multilock解决)
+      - [内部的原理](#内部的原理)
 
 # 一、什么是分布式锁
 ## 1.1 概念
@@ -33,7 +48,7 @@ draft: false
 4.高性能
 5.安全性
 
-# 二、实现方法
+# 二、基于redis实现方法
 ![多种方案](1.png)
 >[!TIP]
 这里采取redis的实现，setnx设置分布式互斥锁，ttl设置互斥时间，防止redis宕机无法删除互斥锁形成死锁。
@@ -273,3 +288,176 @@ return 0
 >[!TIP]
 1.这里的路径**ClassPath指的就是resource根目录**，由于lua文件直接在其下创建所以可以直接引用，也可以采取注入**ResourceLoader调用getResource（）**获取任意路径<br>
 2.这里的**KEYS必须要封装成数组**，**而ARGV不需要**，可以直接传入多个参数，在底层就会自动封装成数组
+# 三、基于Redission实现
+## 3.1 rediss的问题
+![redis的问题](7.png)
+
+## 3.2 什么是Redission
+### 3.2.1 Redission的简介
+![Redission简介](8.png)
+**<span style="color:red">可参考:</span>**
+::github{repo="redisson/redisson"}
+
+### 3.2.2 Redisson的使用方法
+**1.** 先引入redisson的依赖在pom文件里
+~~~java
+ <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson</artifactId>
+            <version>3.13.6</version>
+        </dependency>
+~~~
+
+**2.** 创建一个配置类用来配置Redisson,返回值类型是RedissonClient
+~~~java
+@Configuration
+public class RedissonConfig {
+
+    @Bean
+    public RedissonClient redissonClient(){
+        Config config = new Config();
+        config.useSingleServer().setAddress("localhost:6379");//这里的地址是redis的地址，可以是虚拟机也可以是本机等，有密码在后面加上setPassword的方法设置密码
+        return Redisson.create(config);
+    }
+}
+~~~
+>[!TIP]
+注意这里的是**单节点**
+
+**3.**在Service层中注入bean，调用相关方法
+~~~java
+    //注入
+    @Resource
+    private RedissonClient redissonClient;
+    //调用
+     Long userId = UserHolder.getUser().getId();
+     RLock simplelock = redissonClient.getLock("Order:"+userId);//注意返回值类型，这里get的是最普通的锁，直接传入锁的名字作为参数
+       boolean success = simplelock.tryLock();//这里也可以传入重试时间，过期时间，时间单位等参数
+       if(!success){
+           return Result.fail("一人只能下一单");
+       }
+
+        try {
+            IVoucherOrderService proxy =(IVoucherOrderService) AopContext.currentProxy();
+            return proxy.createVoucherOrder(id);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e);
+        } finally {
+            simplelock.unlock();
+        }
+~~~
+
+## 3.3 Redisson中可重入锁的原理
+![Redisson中可重入锁的原理](9.png)
+<span style = "color : red">本质上是通过hash结构存储，以lua脚本实现，每次获取一次锁就加一，释放一次就减一，判断是否为0，是就释放锁<span>
+
+获取锁的脚本：
+~~~lua
+local key = KEYS[1];--锁的key
+local threadId = ARGV[1];--线程唯一标识
+local releaseTime = ARGV[2];--锁的自动释放时间
+
+--判断是否存在
+if(redis.call('exists',key)==0)then 
+    --不存在，获取锁
+    redis.call('hset',key,threadId,'1');
+    --设置有效期
+    redis.call('pexpire',key,releaseTime);
+    return 1;--返回结果
+end;
+--锁已经存在
+if(redis.call('hexist',key,threadId)==1)then
+--是自己的锁，重入次数加一
+redis.call('hincrby',key,threadId,'1');
+--重新设置有效时间
+redis.call('pexpire',key,releaseTime);
+    return 1; --返回结果
+
+end;
+return 0; --标识锁不是自己的，获取失败
+~~~
+>[!TIP]
+这里如果获取锁失败，也就是存在自己的锁就会有这样一行return redis.call('pttl',KEYS[1]);
+
+释放锁的脚本：
+~~~lua
+local key = KEYS[1];--锁的key
+local threadId = ARGV[1]; -- 线程唯一标识
+local releaseTime =ARGV[2];--锁的自动释放时间
+
+-- 判断当前锁是否被自己持有,是不是自己的
+if(redis.call('HEXISTS',key,threadId) == 0)then
+end;
+
+--锁是自己的，重入次数减一
+local count = redis.call('HINCRBY',key,threadId,-1);
+--判断重入1次数是否为0，是就删除
+if(count > 0)then
+--大于0，继续执行业务，刷新更新时间
+    redis.call('PEXPIRE',key,releaseTime);
+    return nil;
+
+else -- 删除锁
+    redis.call('DEL',key);
+    return nil;
+end;
+~~~
+>[!TIP]
+这里的**nil是null**的意思，这里**hash结构filed中key代表线程标识(UUID+id)，value代表重入次数**，每次**获取+1**，**释放-1**，当为**0**时代表正好可以删除锁从redis中
+
+## 3.4 Redisson中锁的可重式机制
+### 3.4.1 核心机制--订阅发布消息/超时兜底重试机制
+#### 1. 有参等待时间情况，ttl参数
+tryLock逻辑:
+1.会**先进行获取锁尝试**，并且记录整个过程的时间，失败后，如果当前的剩余时间（ttl减去耗费时间）还存在就会调用**sunsrcibe**方法，接收的是以下lua中**锁释放时pulish的信号。**
+2.这里的等待是一个**异步**请求，并同时获取当前时间，如果等到了就直接再次尝试获取锁，如果没有再次获取当前时间，判断剩余时间是否够，大于0，则进入while循环尝试获取锁，同理要再次算这次尝试消耗时间，如果失败要判断是否有剩余时间，有就接着进行等待下一次的消息发出，当进行获取锁时要判断**剩余时间跟等待时间**的**最小值**，防止锁在获取时过期
+3.当**获取成功，或者剩余时间为0**，就会结束
+![原理](10.png)
+~~~lua
+  "if (redis.call('hexists', KEYS[1], ARGV[3]) == 0) then " +
+        "return nil;" +
+        "end; " +
+        "local counter = redis.call('hincrby', KEYS[1], ARGV[3], -1); " +
+        "if (counter > 0) then " +
+        "redis.call('pexpire', KEYS[1], ARGV[2]); " +
+        "return 0; " +
+        "else " +
+        "redis.call('del', KEYS[1]); " +
+        // ==================== 核心publish ====================
+        "redis.call('publish', KEYS[2], ARGV[1]); " +
+        // ======================================================
+        "return 1; " +
+        "end; " +
+        "return nil;",
+~~~
+
+#### 2.没有释放时间的参数，只有等待时间
+1.这里如果没有等待时间，在尝试获取锁时，会调用**看门狗（WatchDog）机制**，设置**默认时间为30s**，调用以下方法：
+![原理](11.png)
+这里的**renewExpirtion**就是通过定时任务不断**每过10s**就执行一个lua脚本，里面会更新锁的过期时间，这样就达到了续期的效果。一直到获取锁成功才会结束。
+>[!NOTE]
+这里的entry存储的是**线程id，定时任务**，重入的话会返回之前的entry，第一次就是null，需要加入定时任务更新续期。
+<br>
+释放锁就需要根据entryName也就是锁的名字，删除线程id，取消定时任务，最后移除这个entry锁。
+
+#### 3.无参的情况
+等待时间为0，剩余时间为0，只会获取一次，剩余时间为0直接就结束了
+
+## 3.5 redisson解决主从一致性问题
+### 3.5.1 什么是主从一致性问题
+主从一致性就是redis分成**主节点**跟**从节点**，主节点负责核心业务，从节点负责其他业务，**数据之间需要共享**，当主节点获取新的数据，传送给从节点时，发生了宕机，这样从节点就无法获取，此时从节点就会成为新的主节点，这样就出现了问题。数据丢失了
+### 3.5.2 MultiLock解决
+Redisson中的可重入锁，采用hash结构存入的是存在以上问题的
+而MultiLock则近似于其集合，采用多个redis节点，并且要全部都获取锁才能生效，否则无法获取。
+
+#### 内部的原理
+本质还是tryLock核心逻辑，不同之处是是锁的一个集合，需要一个个遍历这些锁，在开始遍历获取锁之前，会先判断是否传入等待时间，传入就会后在后续采用新的锁过期时间，防止在拿到锁后就直接过期了（由于业务的网络等问题时间变长）
+![multiLock](12.png)
+>[!NOTE]
+如果没有传入等待时间，就是无限等待，那么就不会修改释放时间，按照传入的来，如果无参，就会直接走看门狗机制，所以一般都是无参的
+
+然后开始一个个遍历利用**集合迭代器**，每一次遍历都计算剩余的时间，这里**过期时间跟剩余等待时间**是一样的，如果超时则失败。如果获取失败就会**清空所有的获取的锁**重新尝试获取。
+
+最后全部获取成功，如果传入了锁的过期时间，lua会统一给所有的锁设置过期时间（按照上面修改后的），此时开始计时过期时间，否则就不会，直接走看门狗机制。
+
+
