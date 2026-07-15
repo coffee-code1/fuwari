@@ -1,10 +1,10 @@
 ---
 title: 点评项目之-4.分布式锁
 published: 2026-07-09
-updated: 2026-07-13
+updated: 2026-07-14
 description: 通过redis实现分布式锁
 image: ''
-tags: [点评项目,分布式锁,redis,Lua,分布式锁]
+tags: [点评项目,分布式锁,redis,Lua,Redisson]
 category: Redis
 draft: false 
 ---
@@ -316,7 +316,7 @@ public class RedissonConfig {
     @Bean
     public RedissonClient redissonClient(){
         Config config = new Config();
-        config.useSingleServer().setAddress("localhost:6379");//这里的地址是redis的地址，可以是虚拟机也可以是本机等，有密码在后面加上setPassword的方法设置密码
+        config.useSingleServer().setAddress("redis://localhost:6379");//这里的地址是redis的地址，可以是虚拟机也可以是本机等，有密码在后面加上setPassword的方法设置密码
         return Redisson.create(config);
     }
 }

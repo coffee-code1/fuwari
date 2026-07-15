@@ -1,5 +1,5 @@
 # About
-一个平平无奇的小博客网站
+这是Bitter Melon的爪洼学习记录网站
 
 ::github{repo="coffee-code1/fuwari"}
 
