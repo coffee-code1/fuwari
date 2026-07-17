@@ -8,7 +8,7 @@ import type {
 import { LinkPreset } from "./types/config";
 
 export const siteConfig: SiteConfig = {
-	title: "BitterMellon",
+	title: "Bitter Melon",
 	subtitle: "Block Site",
 	lang: "zh_CN", // Language code, e.g. 'en', 'zh_CN', 'ja', etc.
 	themeColor: {
@@ -55,7 +55,7 @@ export const navBarConfig: NavBarConfig = {
 export const profileConfig: ProfileConfig = {
 	avatar: "assets/images/avatar.jpg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 	name: "Bitter Melon",
-	bio: "一个记录我的后端学习路的网站",
+	bio: "专注后端开发，记录编程学习路上的思考与沉淀。",
 	links: [
 		// {
 		// 	name: "Twitter",
@@ -73,6 +73,11 @@ export const profileConfig: ProfileConfig = {
 			name: "GitHub",
 			icon: "fa6-brands:github",
 			url: "https://github.com/coffee-code1",
+		},
+		{
+ 	 		name: "邮箱",
+  			icon: "fa6-solid:envelope",
+ 			url: "mailto:3097812946@qq.com",
 		},
 	],
 };
