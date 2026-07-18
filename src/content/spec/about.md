@@ -5,7 +5,10 @@
 你好啊，我是 Bitter Melon，一名正在深耕后端方向的计算机在校生。
 日常主要学习 Java、SpringBoot、MySQL、Redis 等后端核心技术，同时参与小型项目实践、刷题夯实算法基础。
 搭建本站的初衷，是把学习中遇到的问题、知识点总结、项目复盘整理归档，既做自我沉淀，也希望内容能帮到同样走在学习路上的人。
-GitHub（coffee）、Gitee (coffee)会同步更新练习项目，欢迎交流探讨技术问题。
+>[!TIP]
+GitHub（userName:coffee.code1）、Gitee (userName:coffee.code)会同步更新练习项目，欢迎交流探讨技术问题。
+
+
 ## 笔记：
 ::github{repo="coffee-code1/fuwari"}
 

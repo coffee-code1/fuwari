@@ -9,13 +9,13 @@ importers:
   .:
     dependencies:
       '@astrojs/check':
-        specifier: ^0.9.6
+        specifier: ^0.9.9
         version: 0.9.9(prettier@3.8.4)(typescript@5.9.3)
       '@astrojs/rss':
-        specifier: ^4.0.14
+        specifier: ^4.0.18
         version: 4.0.18
       '@astrojs/sitemap':
-        specifier: ^3.6.0
+        specifier: ^3.7.3
         version: 3.7.3
       '@astrojs/svelte':
         specifier: 7.2.3
@@ -24,19 +24,19 @@ importers:
         specifier: ^6.0.2
         version: 6.0.2(astro@5.13.10(@types/node@26.0.0)(jiti@1.21.7)(rollup@2.80.0)(stylus@0.64.0)(terser@5.48.0)(typescript@5.9.3)(yaml@2.9.0))(tailwindcss@3.4.19(yaml@2.9.0))
       '@expressive-code/core':
-        specifier: ^0.41.4
+        specifier: ^0.41.7
         version: 0.41.7
       '@expressive-code/plugin-collapsible-sections':
-        specifier: ^0.41.4
+        specifier: ^0.41.7
         version: 0.41.7
       '@expressive-code/plugin-line-numbers':
-        specifier: ^0.41.4
+        specifier: ^0.41.7
         version: 0.41.7
       '@fontsource-variable/jetbrains-mono':
         specifier: ^5.2.8
         version: 5.2.8
       '@fontsource/roboto':
-        specifier: ^5.2.9
+        specifier: ^5.2.10
         version: 5.2.10
       '@iconify-json/fa6-brands':
         specifier: ^1.2.6
@@ -48,22 +48,22 @@ importers:
         specifier: ^1.2.4
         version: 1.2.4
       '@iconify-json/material-symbols':
-        specifier: ^1.2.50
+        specifier: ^1.2.79
         version: 1.2.79
       '@iconify/svelte':
         specifier: ^4.2.0
         version: 4.2.0(svelte@5.56.3)
       '@swup/astro':
-        specifier: ^1.7.0
+        specifier: ^1.8.0
         version: 1.8.0
       '@tailwindcss/typography':
-        specifier: ^0.5.19
+        specifier: ^0.5.20
         version: 0.5.20(tailwindcss@3.4.19(yaml@2.9.0))
       astro:
         specifier: 5.13.10
         version: 5.13.10(@types/node@26.0.0)(jiti@1.21.7)(rollup@2.80.0)(stylus@0.64.0)(terser@5.48.0)(typescript@5.9.3)(yaml@2.9.0)
       astro-expressive-code:
-        specifier: ^0.41.4
+        specifier: ^0.41.7
         version: 0.41.7(astro@5.13.10(@types/node@26.0.0)(jiti@1.21.7)(rollup@2.80.0)(stylus@0.64.0)(terser@5.48.0)(typescript@5.9.3)(yaml@2.9.0))
       astro-icon:
         specifier: ^1.1.5
@@ -72,19 +72,19 @@ importers:
         specifier: ^9.0.1
         version: 9.0.1
       katex:
-        specifier: ^0.16.27
+        specifier: ^0.16.47
         version: 0.16.47
       markdown-it:
-        specifier: ^14.1.0
+        specifier: ^14.2.0
         version: 14.2.0
       mdast-util-to-string:
         specifier: ^4.0.0
         version: 4.0.0
       overlayscrollbars:
-        specifier: ^2.12.0
+        specifier: ^2.16.0
         version: 2.16.0
       pagefind:
-        specifier: ^1.4.0
+        specifier: ^1.5.2
         version: 1.5.2
       photoswipe:
         specifier: ^5.4.4
@@ -120,7 +120,7 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       sanitize-html:
-        specifier: ^2.17.0
+        specifier: ^2.17.5
         version: 2.17.5
       sharp:
         specifier: ^0.34.5
@@ -129,7 +129,7 @@ importers:
         specifier: ^0.64.0
         version: 0.64.0
       svelte:
-        specifier: ^5.39.8
+        specifier: ^5.56.3
         version: 5.56.3
       tailwindcss:
         specifier: ^3.4.19
@@ -138,11 +138,11 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
       unist-util-visit:
-        specifier: ^5.0.0
+        specifier: ^5.1.0
         version: 5.1.0
     devDependencies:
       '@astrojs/ts-plugin':
-        specifier: ^1.10.6
+        specifier: ^1.10.9
         version: 1.10.9
       '@biomejs/biome':
         specifier: 2.2.5
@@ -160,7 +160,7 @@ importers:
         specifier: ^4.0.4
         version: 4.0.4
       '@types/sanitize-html':
-        specifier: ^2.16.0
+        specifier: ^2.16.1
         version: 2.16.1
       postcss-import:
         specifier: ^16.1.1
