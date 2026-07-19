@@ -4,7 +4,7 @@ published: 2026-07-17
 updated: 2026-07-17
 description: 实现发布博客，点赞，查看博客的功能
 image: ''
-tags: [点评项目,消息队列]
+tags: [点评项目,Redis]
 category: Redis
 draft: false 
 ---
