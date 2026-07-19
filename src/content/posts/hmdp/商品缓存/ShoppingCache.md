@@ -4,7 +4,7 @@ published: 2026-06-19
 updated: 2026-06-24
 description: 利用缓存存储商品数据
 image: ''
-tags: [cache,点评项目]
+tags: [cache,点评项目,Redis]
 category: Redis
 draft: false 
 ---

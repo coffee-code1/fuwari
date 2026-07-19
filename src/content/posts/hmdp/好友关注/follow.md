@@ -1,10 +1,10 @@
 ---
-title: 点评项目之-七.好友关注1
+title: 点评项目之-七.好友关注
 published: 2026-07-18
 updated: 2026-07-18
 description: 实现博主关注，共同关注的功能
 image: ''
-tags: [点评项目,数据库操作]
+tags: [点评项目,Feed流滚动查询,Redis]
 category: Redis
 draft: false 
 ---

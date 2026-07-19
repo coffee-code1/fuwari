@@ -4,7 +4,7 @@ published: 2026-07-09
 updated: 2026-07-14
 description: 通过redis实现分布式锁
 image: ''
-tags: [点评项目,分布式锁,redis,Lua,Redisson]
+tags: [点评项目,分布式锁,Redis,Lua,Redisson]
 category: Redis
 draft: false 
 ---

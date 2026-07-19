@@ -4,7 +4,7 @@ published: 2026-07-14
 updated: 2026-07-16
 description: 解决之前的优惠券秒杀业务时间太长问题
 image: ''
-tags: [lua,点评项目,Redisson,消息队列，阻塞队列]
+tags: [lua,点评项目,Redisson,消息队列，阻塞队列,Redis]
 category: Redis
 draft: false 
 ---
