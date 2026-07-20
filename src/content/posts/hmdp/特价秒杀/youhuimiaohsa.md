@@ -4,7 +4,7 @@ published: 2026-06-27
 updated: 2026-06-30
 description: 利用缓存机制解决优惠券秒杀的问题
 image: ''
-tags: [cache,点评项目,乐观锁悲观锁,Redis]
+tags: [点评项目,乐观锁悲观锁,Redis]
 category: Redis
 draft: false 
 ---
