@@ -1,34 +1,40 @@
 ---
-title: 点评项目之-九.用户签到
-published: 2026-07-20
-updated: 2026-07-20
-description: 利用Redis中的bitMap结构实现用户签到1
+title: 点评项目之-九.用户签到与UV统计
+published: 2026-07-21
+updated: 2026-07-21
+description: 利用Redis中的bitMap结构实现用户签到，利用Redis中的HyperLongLong实现UV统计
 image: ''
-tags: [点评项目,Redis,bitMap]
+tags: [点评项目,Redis,bitMap，HLL]
 category: Redis
 draft: false 
 ---
-- [一、bitMap基本概念](#一bitmap基本概念)
-  - [优点](#优点)
-- [二、实现签到](#二实现签到)
-  - [2.1 思路](#21-思路)
-  - [2.2 代码实现：](#22-代码实现)
-- [三、连续签到统计](#三连续签到统计)
-  - [3.1 业务逻辑](#31-业务逻辑)
-  - [3.2 代码实现](#32-代码实现)
-
-# 一、bitMap基本概念
+- [一、用户签到](#一用户签到)
+  - [1.1 bitMap基本概念](#11-bitmap基本概念)
+  - [1.2 优点](#12-优点)
+  - [1.3 实现签到](#13-实现签到)
+    - [1.3.1 思路](#131-思路)
+    - [1.3.2 代码实现：](#132-代码实现)
+  - [1.4、连续签到统计](#14连续签到统计)
+    - [1.4.1 业务逻辑](#141-业务逻辑)
+    - [1.4.2 代码实现](#142-代码实现)
+- [二、UV统计](#二uv统计)
+  - [2.1 PV跟UV概念](#21-pv跟uv概念)
+  - [2.2 HyperLogLog(HLL)概念](#22-hyperlogloghll概念)
+  - [2.3 特点](#23-特点)
+  - [语法](#语法)
+# 一、用户签到
+## 1.1 bitMap基本概念
 ![bitMap](1.png)
 SETBIT key offset(从0开始) value<br>
 GETBIT key offset<br>
 BITFIELD key [GET type offset] [SET type offset value] [INCRBY type offset increment] [OVERFLOW WRAP|SAT|FAIL]
-## 优点
+## 1.2 优点
 使用数据库存储的话，会占用大量的内存，而这个只需要用**01**表示是否签到，占用的位数少，**内存少**
 
-# 二、实现签到
-## 2.1 思路
+## 1.3 实现签到
+### 1.3.1 思路
 根据bitMap传入key，以及天数，跟01，这里key就是**前缀加用户id加年跟月组成的后缀**
-## 2.2 代码实现：
+### 1.3.2 代码实现：
 Controller:
 ~~~java
  @PostMapping("/sign")
@@ -55,11 +61,11 @@ Service:
     }
 ~~~
 
-# 三、连续签到统计
-## 3.1 业务逻辑
+## 1.4、连续签到统计
+### 1.4.1 业务逻辑
 查询从当前日期到0时的二进制，这里用到**BITFIELD**实现的，返回的是**十进制**，需要**位运算**计算有多少个连续的1.
 
-## 3.2 代码实现
+### 1.4.2 代码实现
 controller:
 ~~~java
 
@@ -107,3 +113,18 @@ Service：
         return Result.ok(count);
     }
 ~~~
+
+# 二、UV统计
+## 2.1 PV跟UV概念
+![pv$uv](2.png)
+
+## 2.2 HyperLogLog(HLL)概念
+是从LogLog算法衍生出的概率算法，用于确定非常大的集合的级数，而不需要存储其所有值。
+
+## 2.3 特点
+Redis中的HLL是基于string结构实现的，单个HLL的内存永远小于16kb，内存占用小。有一定的误差，0.81%。
+
+## 语法
+![语法](3.png)
+>[!TIP]
+这里的**PFCOUNT**是统计的**UV**，不会重复统计
