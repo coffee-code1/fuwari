@@ -16,5 +16,9 @@ GitHub（userName:coffee.code1）、Gitee (userName:coffee.code)会同步更新�
 ### 1. 外卖系统
 ::github{repo="coffee-code1/sky-take-out"}
 
-### 2. 大众点评
+### 2. 点评平台
 ::github{repo="coffee-code1/hmdp"}
+
+### 3. 非遗文化数字化保护平台
+::github{repo="coffee-code1/ICH-Protection-Webp"}
+
