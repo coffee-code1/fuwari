@@ -29,6 +29,9 @@ draft: false
   - [7.1 镜像分层](#71-镜像分层)
   - [7.2 Dockerfile语法](#72-dockerfile语法)
 - [八、Docker网络](#八docker网络)
+- [九、DockerCompose](#九dockercompose)
+  - [9.1 介绍](#91-介绍)
+  - [9.2 语法](#92-语法)
 
 # 一、什么是Docker
 Docker 是一款开源容器化引擎，基于 Linux 内核的 Namespace、Cgroups 技术实现应用隔离，能把程序、依赖、运行环境**打包成标准化容器**，实现「一次打包，到处运行」。
@@ -116,3 +119,12 @@ docker run -d --name nginx -p 8080:80 -v 数据卷名字 :/usr/share/nginx/html 
 ![docker网络](10.png)
 >[!NOTE]
 两个容器加入**同一个网桥**，就可以通过**容器名字直接访问**，而不用ip
+
+# 九、DockerCompose
+## 9.1 介绍
+![DockerCompose](11.png)
+>[!NOTE]
+一个项目对应一个yml文件
+
+## 9.2 语法
+![语法](12.png)

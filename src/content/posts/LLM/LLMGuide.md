@@ -8,6 +8,23 @@ tags: [大模型应用,NLP,LLM]
 category: 大模型应用
 draft: false 
 ---
+- [一、初步认识AI与大模型](#一初步认识ai与大模型)
+  - [1.1 AI的含义](#11-ai的含义)
+  - [1.2 AI的发展](#12-ai的发展)
+  - [1.3大模型底层原理](#13大模型底层原理)
+- [二、大模型应用开发](#二大模型应用开发)
+  - [2.1 大模型部署](#21-大模型部署)
+    - [2.1.1 云部署](#211-云部署)
+    - [2.1.2 本地部署](#212-本地部署)
+  - [2.2 大模型调用](#22-大模型调用)
+  - [2.3 大模型应用是什么](#23-大模型应用是什么)
+    - [大模型应用](#大模型应用)
+  - [2.4 大模型应用开发框架](#24-大模型应用开发框架)
+    - [1. P：纯Prompt问答（Pure Prompt）](#1-p纯prompt问答pure-prompt)
+    - [2. A：Agent + Function Calling](#2-aagent--function-calling)
+    - [3. R：RAG 检索增强生成（Retrieval Augmented Generation）](#3-rrag-检索增强生成retrieval-augmented-generation)
+    - [4. F：Fine-tuning 微调](#4-ffine-tuning-微调)
+
 # 一、初步认识AI与大模型
 
 ## 1.1 AI的含义
