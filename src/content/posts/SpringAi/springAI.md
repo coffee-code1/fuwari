@@ -14,6 +14,10 @@ draft: false
   - [2.2 yml/properties文件配置](#22-ymlproperties文件配置)
   - [2.3 创建配置类](#23-创建配置类)
   - [2.4 注入ChatClient](#24-注入chatclient)
+- [三、日志打印](#三日志打印)
+  - [3.1 Advisor定义](#31-advisor定义)
+  - [3.2 分类](#32-分类)
+  - [3.3 代码应用](#33-代码应用)
 
 # 一、SpringAI定义
 Spring AI是一个旨在帮助Java开发者，特别是Spring开发者，更轻松地将**AI功能集成到企业级应用中**的**框架**。
@@ -35,18 +39,7 @@ Spring AI是一个旨在帮助Java开发者，特别是Spring开发者，更轻�
 ~~~
 这里的lombok要手动引入依赖，脚手架生成的有bug
 ## 2.2 yml/properties文件配置
-~~~java
-spring:
-  application:
-    name: bittermelonAI
-  ai:
-    openai:
-      base_url: https://api.siliconflow.cn/v1
-      chat:
-        model: deepseek-ai/DeepSeek-V3
-        temperature: 0.7
-      api-key: sk-XXXXXXXXXXXXXXXXXXXXXXXX
-~~~
+![yaml](1.png)
 >[!NOTE]
 这里前面是项目名字，后面的ai才是必须配置的，这里给出的是**openai形式的配置**，要配置提供**ai的url**（**本地部署的ai不需要**），**chat是专门针对与聊天功能的**，配置了**模型名称**（务必准确），**temperature**表示的是每次回答的**随机性**，最后就是**你的密钥**
 
@@ -88,3 +81,30 @@ public class AiChatController {
 >[!TIP]
 这里在一个Controller使用了**ChatClient**，获取**用户提示词message**，并且**采取流式stream**，最后**content收集**，采取流式返回就是**flux<>**的类型<br>
 produces = "text/html;charset=utf-8"防止生成的是乱码
+
+# 三、日志打印
+## 3.1 Advisor定义
+这里直接使用SpringAI提供的Advisor即可，需要在ChatClient中配置，并且在yaml文件里设置log级别
+>[!TIP]
+Advisor（增强组件/顾问组件） 是Spring AI 专门给聊天对话设计的拦截器，对标 Spring AOP 切面、MVC 拦截器：
+在发给大模型的请求发出前、大模型返回回答之后自动执行附加逻辑，不用你在业务 Controller 里重复写代码，给对话能力做 “外挂增强”
+
+## 3.2 分类
+![分类](2.png)
+第一个是打印到**控制台**上，第二个是**会话记忆**，第三个是用于**RAG**的
+## 3.3 代码应用
+~~~java
+@Configuration
+public class ChatClientConfig {
+    @Bean
+    public ChatClient chatClient(OpenAiChatModel  model) {
+        return ChatClient
+                .builder(model)
+                .defaultSystem("你现在是动漫角色八奈见杏菜")
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .build();
+    }
+}
+~~~
+>[!NOTE]
+这里的new后可以传入其它类型的Advisor

@@ -110,6 +110,15 @@ docker run -d --name nginx -p 8080:80 -v 数据卷名字 :/usr/share/nginx/html 
 # 七、自定义镜像
 ## 7.1 镜像分层
 ![layer](8.png)
+镜像源加速：
+~~~java
+{
+"registry-mirrors": 【
+"https://docker.m.daocloud.io",
+"https://docker.1panel.live"
+】
+}
+~~~
 
 ## 7.2 Dockerfile语法
 ![dockerFile](9.png)
