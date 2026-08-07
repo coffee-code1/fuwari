@@ -24,6 +24,9 @@ draft: false
   - [2.4 okHttp优化](#24-okhttp优化)
     - [2.4.1 依赖引入](#241-依赖引入)
     - [2.4.2 配置修改](#242-配置修改)
+  - [2.5 最佳实践](#25-最佳实践)
+    - [第一种实例](#第一种实例)
+  - [2.6 日志打印](#26-日志打印)
 
 # 一、Nacos注册中心组件
 ## 1.1 定义
@@ -141,3 +144,38 @@ feign:
   okhttp:
     enabled: true
 ~~~
+
+## 2.5 最佳实践
+对于每一个需要服务的模块都需要进行feign依赖的引入以及配置，这样的话过于繁琐了，我们这时就可以选择抽离出一个单独的模块定义依赖跟配置，或者在提供服务的模块下，在单独设置模块定义。
+>[!TIP]
+第一种方式结构简单，但是耦合度高<br>
+![one](4.png)
+第二种方式结构复杂，但是耦合度低<br>
+![secod](5.png)
+
+### 第一种实例
+在其中引入公共的依赖
+~~~java
+  <!-- openfeign 核心依赖 -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-openfeign</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+~~~
+
+接着创建dto以及client<br>
+最后记得修改接受服务的模块的启动类上修改扫描包的位置，从原来的自己内部变成了单独的模块，否则无法找到client bean
+
+## 2.6 日志打印
+默认是五日志输出的，需要设置日志的等级
+![rizhi](6.png)
