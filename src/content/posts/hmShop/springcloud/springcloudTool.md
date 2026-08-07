@@ -1,7 +1,7 @@
 ---
 title: SpringCloud-二、微服务常用的中间件
 published: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-07
 description: 微服务框架SpringCloud中的常用工具
 image: ''
 tags: [SpringCloud,Nacos]
@@ -27,6 +27,13 @@ draft: false
   - [2.5 最佳实践](#25-最佳实践)
     - [第一种实例](#第一种实例)
   - [2.6 日志打印](#26-日志打印)
+- [三、网关（SpringCloudGateway技术）](#三网关springcloudgateway技术)
+  - [3.1 什么是网关](#31-什么是网关)
+  - [3.2 作用](#32-作用)
+  - [3.3 快速入门](#33-快速入门)
+    - [3.3.1 依赖配置](#331-依赖配置)
+    - [3.3.2 创建启动类](#332-创建启动类)
+    - [3.3.3 yaml文件配置路由](#333-yaml文件配置路由)
 
 # 一、Nacos注册中心组件
 ## 1.1 定义
@@ -53,7 +60,7 @@ nacos/nacos-server:v2.1.0-slim
 
 #### 代码依赖引入以及配置修改
 **依赖**：
-~~~java
+~~~xml
  <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
@@ -61,7 +68,7 @@ nacos/nacos-server:v2.1.0-slim
 ~~~
 
 **yaml**：
-~~~
+~~~yaml
 spring:
   cloud:
     nacos:
@@ -74,7 +81,7 @@ spring:
 
 # 二、OpenFeign优化服务发现
 ## 2.1 依赖引入
-~~~java
+~~~xml
 <!-- openfeign 核心依赖 -->
 <dependency>
     <groupId>org.springframework.cloud</groupId>
@@ -130,7 +137,7 @@ public interface ItemClient {
 ## 2.4 okHttp优化
 itemClient是一个**代理对象**，内部是基于JDK默认的**HttpURLConnection**实现的发送请求，这种方式**不支持连接池**，**效率也很低**，所以我们通常采取**OkHttp**或者**Apache HttpClient**
 ### 2.4.1 依赖引入
-~~~java
+~~~xml
    <!--ok-http-->
         <dependency>
             <groupId>io.github.openfeign</groupId>
@@ -155,7 +162,7 @@ feign:
 
 ### 第一种实例
 在其中引入公共的依赖
-~~~java
+~~~xml
   <!-- openfeign 核心依赖 -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
@@ -179,3 +186,79 @@ feign:
 ## 2.6 日志打印
 默认是五日志输出的，需要设置日志的等级
 ![rizhi](6.png)
+
+# 三、网关（SpringCloudGateway技术）
+## 3.1 什么是网关
+顾明思议，网关就是网络的关口。数据在网络间传输，从一个网络传输到另一网络时就需要经过网关来做数据的路由和转发以及数据安全的校验。
+>[!TIP]
+路由就是寻找请求所对应的哪个服务器，转发就是将请求传递过去
+
+## 3.2 作用
+现在，微服务网关就起到这样的作用。前端请求不能直接访问微服务，而是要请求网关：
+- 网关可以做安全控制，也就是登录身份校验，校验通过才放行
+- 通过认证后，网关再根据请求判断应该访问哪个微服务，将请求转发过去
+## 3.3 快速入门
+### 3.3.1 依赖配置
+由于网关本身也是一个**独立的微服务**，因此也需要创建一个模块开发功能。
+~~~xml
+  <!--网关-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-gateway</artifactId>
+        </dependency>
+        <!--nacos discovery-->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        </dependency>
+        <!--负载均衡-->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+    </dependencies>
+~~~
+### 3.3.2 创建启动类
+~~~java
+@SpringBootApplication
+public class HMallGateApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(HMallGateApplication.class, args);
+    }
+}
+~~~
+
+### 3.3.3 yaml文件配置路由
+~~~yaml
+server:
+  port: 8080
+spring:
+  application:
+    name: gateway
+  cloud:
+    nacos:
+      server-addr: 192.168.150.101:8848
+    gateway:
+      routes:
+        - id: item # 路由规则id，自定义，唯一
+          uri: lb://item-service # 路由的目标服务，lb代表负载均衡，会从注册中心拉取服务列表
+          predicates: # 路由断言，判断当前请求是否符合当前规则，符合则路由到目标服务
+            - Path=/items/**,/search/** # 这里是以请求路径作为判断规则
+        - id: cart
+          uri: lb://cart-service
+          predicates:
+            - Path=/carts/**
+        - id: user
+          uri: lb://user-service
+          predicates:
+            - Path=/users/**,/addresses/**
+        - id: trade
+          uri: lb://trade-service
+          predicates:
+            - Path=/orders/**
+        - id: pay
+          uri: lb://pay-service
+          predicates:
+            - Path=/pay-orders/**
+
+~~~
