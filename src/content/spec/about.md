@@ -20,5 +20,5 @@ GitHub（userName:coffee.code1）、Gitee (userName:coffee.code)会同步更新�
 ::github{repo="coffee-code1/hmdp"}
 
 ### 3. 非遗文化数字化保护平台
-::github{repo="coffee-code1/ICH-Protection-Webp"}
+::github{repo="coffee-code1/ICH-Protection-Web"}
 
