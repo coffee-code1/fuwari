@@ -8,6 +8,26 @@ tags: [SpringCloud,Spring Cloud Gateway]
 category: SpringCloud
 draft: false 
 ---
+- [网关（SpringCloudGateway技术）](#网关springcloudgateway技术)
+  - [1.什么是网关](#1什么是网关)
+  - [2.作用](#2作用)
+  - [3.快速入门](#3快速入门)
+    - [3.1 依赖配置](#31-依赖配置)
+    - [3.2 创建启动类](#32-创建启动类)
+    - [3.3 yaml文件配置路由](#33-yaml文件配置路由)
+  - [4.路由属性](#4路由属性)
+    - [4.1 路由断言](#41-路由断言)
+    - [4.2 过滤器](#42-过滤器)
+  - [5.登陆校验](#5登陆校验)
+    - [5.1 思路分析](#51-思路分析)
+    - [5.2 如何设置](#52-如何设置)
+    - [5.3 全局过滤器](#53-全局过滤器)
+  - [6. 登陆检验以及用户信息传递](#6-登陆检验以及用户信息传递)
+    - [全局过滤器实现登陆检验](#全局过滤器实现登陆检验)
+    - [MVC拦截器传递用户信息](#mvc拦截器传递用户信息)
+  - [7.微服务间的用户信息传递](#7微服务间的用户信息传递)
+    - [代码实现](#代码实现)
+
 # 网关（SpringCloudGateway技术）
 ## 1.什么是网关
 顾明思议，网关就是网络的关口。数据在网络间传输，从一个网络传输到另一网络时就需要经过网关来做数据的路由和转发以及数据安全的校验。
@@ -223,3 +243,29 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   com.hmall.common.config.JsonConfig,\
   com.hmall.common.config.MvcConfig
 ~~~
+
+## 7.微服务间的用户信息传递
+由于微服务之间是基于openFeign发送请求的，所以我们也可以采取设置**一个微服务的拦截器**，在请求中添加请求头。这就是openFeign的**RequestInterceptor**
+
+### 代码实现
+~~~java
+
+public class DefaultFeignConfig {
+
+    @Bean
+    public RequestInterceptor openFeignInterceptor() {
+        return new RequestInterceptor() {
+            @Override
+            public void apply(RequestTemplate requestTemplate) {
+                Long userId = UserContext.getUser();
+                if (userId != null) {
+                    requestTemplate.header("user-info", UserContext.getUser().toString());
+                }
+            }
+        };
+    }
+}
+
+~~~
+由于此类没有加@Config注解或者component，是因为我们此处设置的**不是全局的拦截器**，而是局部的，所以我们可以在需要被拦截的微服务的**启动类**上加上：<br>@EnableFeignClients(value = "com.hmall.api.client",defaultConfiguration = DefaultFeignConfig.class)
+即可

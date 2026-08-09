@@ -1,7 +1,7 @@
 ---
-title: SpringCloud-二、微服务常用的中间件（Nacos）
+title: SpringCloud-二、微服务常用的服务注册发现中间件（Nacos）
 published: 2026-08-06
-updated: 2026-08-07
+updated: 2026-08-09
 description: 微服务框架SpringCloud中的常用工具
 image: ''
 tags: [SpringCloud,Nacos]
