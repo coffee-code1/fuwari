@@ -1,5 +1,5 @@
 ---
-title: SpringCloud-二、微服务常用的远程服务调用中间件（OpenFeign）
+title: SpringCloud-三、微服务常用的远程服务调用中间件（OpenFeign）
 published: 2026-08-08
 updated: 2026-08-08
 description: 微服务框架SpringCloud中的常用工具

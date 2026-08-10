@@ -1,5 +1,5 @@
 ---
-title: SpringCloud-三、微服务常用的网关中间件（GateWay）
+title: SpringCloud-四、微服务常用的网关中间件（GateWay）
 published: 2026-08-08
 updated: 2026-08-08
 description: 微服务框架SpringCloud中的常用工具
