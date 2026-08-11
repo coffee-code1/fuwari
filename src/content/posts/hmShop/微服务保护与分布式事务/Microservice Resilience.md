@@ -23,6 +23,22 @@ draft: false
   - [1.5 服务熔断](#15-服务熔断)
     - [1.5.1 FallBack降级](#151-fallback降级)
     - [1.5.2 服务熔断](#152-服务熔断)
+- [二、分布式事务](#二分布式事务)
+  - [2.1 seata](#21-seata)
+    - [2.1.1 认识seata](#211-认识seata)
+    - [2.1.2 部署TC](#212-部署tc)
+      - [部署数据库](#部署数据库)
+      - [配置文件](#配置文件)
+      - [docker部署](#docker部署)
+    - [2.1.3 微服务集成](#213-微服务集成)
+    - [2.1.4 改造配置](#214-改造配置)
+    - [2.1.5 添加数据库表(AT)](#215-添加数据库表at)
+  - [2.2 XA 模式](#22-xa-模式)
+    - [2.2.1 两阶段提交](#221-两阶段提交)
+    - [2.2.2 使用](#222-使用)
+  - [2.3 AT模式](#23-at模式)
+    - [2.3.1 seata中的原理](#231-seata中的原理)
+  - [2.4 两者区别](#24-两者区别)
 
 # 一、微服务保护
 保证服务运行的健壮性，避免级联失败导致的雪崩问题，就属于微服务保护
@@ -141,3 +157,141 @@ public class ItemClientFallBack implements FallbackFactory<ItemClient> {
   - 请求失败：则切换到open状态
   <br>
 我们可以在控制台通过点击簇点后的**熔断按钮**来配置熔断策略：若是限流熔断就是慢调用比例，也可以配置异常时的方案
+
+# 二、分布式事务
+## 2.1 seata
+### 2.1.1 认识seata
+解决分布式事务的方案有很多，但实现起来都比较复杂，因此我们一般会使用**开源的框架**来解决分布式事务问题。在众多的开源分布式事务框架中，功能最完善、使用最多的就是阿里巴巴在2019年开源的Seata了。
+<br>
+在Seata的事务管理中有三个重要的角色：
+
+-  **TC** (Transaction Coordinator) - 事务协调者：维护全局和分支事务的状态，**协调全局事务提交或回滚**。 
+-  **TM** (Transaction Manager) - 事务管理器：定义**全局事务的范围**、开始全局事务、提交或回滚全局事务。 
+-  **RM** (Resource Manager) - 资源管理器：管理分支事务，与TC交谈以注册分支事务和报告分支事务的状态，并驱动分支事务提交或回滚。 
+
+工作原理:
+![yuanli](5.png)
+>[!TIP]
+TM和RM可以理解为Seata的客户端部分，引入到**参与事务的微服务依赖**中即可。将来TM和RM就会协助微服务，实现本地分支事务与TC之间交互，实现事务的提交或回滚。
+
+### 2.1.2 部署TC
+#### 部署数据库
+Seata支持多种存储模式，但考虑到持久化的需要，我们一般选择基于数据库存储
+#### 配置文件
+将配置文件也加入虚拟机中，我们采用docker部署
+
+#### docker部署
+~~~shell
+docker run --name seata \
+-p 8099:8099 \
+-p 7099:7099 \
+-e SEATA_IP=192.168.150.101 \
+-v ./seata:/seata-server/resources \
+--privileged=true \
+--network hm-net \
+-d \
+seataio/seata-server:1.5.2
+~~~
+
+### 2.1.3 微服务集成
+在相关业务中引入依赖：
+~~~xml
+<!--统一配置管理-->
+  <dependency>
+      <groupId>com.alibaba.cloud</groupId>
+      <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+  </dependency>
+  <!--读取bootstrap文件-->
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-bootstrap</artifactId>
+  </dependency>
+  <!--seata-->
+  <dependency>
+      <groupId>com.alibaba.cloud</groupId>
+      <artifactId>spring-cloud-starter-alibaba-seata</artifactId>
+  </dependency>
+~~~
+
+### 2.1.4 改造配置
+在nacos上加入共享配置关于seata
+~~~yaml
+seata:
+  registry: # TC服务注册中心的配置，微服务根据这些信息去注册中心获取tc服务地址
+    type: nacos # 注册中心类型 nacos
+    nacos:
+      server-addr: 192.168.150.101:8848 # nacos地址
+      namespace: "" # namespace，默认为空
+      group: DEFAULT_GROUP # 分组，默认是DEFAULT_GROUP
+      application: seata-server # seata服务名称
+      username: nacos
+      password: nacos
+  tx-service-group: hmall # 事务组名称
+  service:
+    vgroup-mapping: # 事务组与tc集群的映射关系
+      hmall: "default"
+~~~
+>[!TIP]
+在加入后，记得添加bootstrap文件获取公共配置从nacos上，然后我们就可以修改原先的yaml文件了
+
+### 2.1.5 添加数据库表(AT)
+这是AT模式下事务回滚的必须条件，**undo_log**这样的一个表
+
+>[!TIP]
+**@GlobalTransactional注解**就是在标记事务的起点，将来**TM**就会基于这个方法判断全局事务范围，初始化全局事务。
+
+## 2.2 XA 模式
+Seata支持四种不同的分布式事务解决方案：
+- XA
+- TCC
+- AT
+- SAGA
+
+### 2.2.1 两阶段提交
+一阶段：
+- 事务协调者通知每个事务参与者执行本地事务
+- 本地事务执行完成后报告事务执行状态给事务协调者，此时事务不提交，继续持有数据库锁
+
+二阶段：
+- 事务协调者基于一阶段的报告来判断下一步操作
+- 如果一阶段都成功，则通知所有事务参与者，提交事务
+- 如果一阶段任意一个参与者失败，则通知所有事务参与者回滚事务
+
+**XA模式的优点是什么？**
+- 事务的强一致性，满足ACID原则
+- 常用数据库都支持，实现简单，并且没有代码侵入
+
+**XA模式的缺点是什么？**
+- 因为一阶段需要锁定数据库资源，等待二阶段结束才释放，性能较差
+- 依赖关系型数据库实现事务
+
+![seata中的XA](6.png)
+
+### 2.2.2 使用
+配置：
+~~~yaml
+seata:
+  data-source-proxy-mode: XA
+~~~
+全局注解：<br>
+@GlobalTransactional
+## 2.3 AT模式
+### 2.3.1 seata中的原理
+![yuanli](7.png)
+阶段一RM的工作：
+- 注册分支事务
+- 记录undo-log（数据快照）
+- 执行业务sql并提交
+- 报告事务状态
+阶段二提交时RM的工作：
+- 删除undo-log即可
+阶段二回滚时RM的工作：
+- 根据undo-log恢复数据到更新前
+
+>[!TIP]
+这里需要在每个微服务中数据表加入一个undo-log作为快照
+
+## 2.4 两者区别
+- XA模式一阶段不提交事务，**锁定资源**；AT模式**一阶段直接提交**，不锁定资源。
+- XA模式依赖**数据库机制实现回滚**；AT模式利用**数据快照**实现数据回滚。
+- XA模式强一致；AT模式最终一致
