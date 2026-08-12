@@ -1,7 +1,7 @@
 ---
 title: SpringCloud-五、微服务保护以及分布式事务
 published: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-11
 description: 微服务框架SpringCloud中的常用工具
 image: ''
 tags: [SpringCloud]
